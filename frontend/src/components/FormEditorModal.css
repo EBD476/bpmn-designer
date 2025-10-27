@@ -1,0 +1,225 @@
+/* FormEditorModal.css */
+@import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+
+.modal, .modal * , .modal label , .modal input , .modal td {
+    font-family: 'Roboto', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+  }
+  
+  .modal h2 ,   .modal h4 , .modal label{
+    color: #5d5d5d;
+  }
+
+  .modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 80%;
+    height: 75%;
+    padding: 2px;
+    background-color: white;
+    border-radius: 8px;
+    transform: translate(-50%, -50%);
+    z-index: 1001;
+    /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3); */
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .modal-content-props-form {
+    display: flex;
+    flex: 1;
+    gap: 20px;
+    overflow: hidden;
+  }
+  
+  .table-wrapper {
+    /* width: 40%;
+    display: flex;
+    flex-direction: column;    
+    gap: 8px; */    
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .left-container {
+    padding: 15px;
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .table thead tr {
+    background-color: #f0f0f0;
+  }
+
+  .table tbody tr:nth-child(odd) {
+    background-color: #fafafa; /* Light gray for odd rows */
+  }
+  
+  .table th,
+  .table td {
+    color : #7a7a7a;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+    border-right: 1px solid #eee;
+    text-align: left;
+  }
+  
+  .table td:last-child,
+  .table th:last-child {
+    border-right: none;
+  }
+  
+.table th:nth-child(1),
+.table td:nth-child(1) {
+  width: 180px; /* or any width you prefer */
+  min-width: 180px;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+  .table-input {
+    width: 100%;
+    padding: 4px;
+    box-sizing: border-box;
+  }
+  
+  .selected-row {
+    background-color:   #c3e2fb !important;
+  }
+  
+  .button-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  
+  .details-wrapper {
+    width: 50%;
+    border-left: 1px solid #ddd;
+    padding: 20px;
+  }
+  
+  .detail-row {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.5rem;
+  }
+  
+  .modal-footer {
+    text-align: right;
+    margin-top: 1rem;
+  }
+  
+  .btn-cancel {
+    margin-right: 8px;
+    padding: 6px 12px;
+  }
+  
+  .btn-save {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    cursor: pointer;
+  }
+
+  .properties-table {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .property-row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 1rem;
+    align-items: start;
+  }
+  
+  .property-label {
+    font-weight: 500;
+    color: #374151;
+    font-size: 0.875rem;
+    padding-top: 0.5rem;
+  }
+  
+  .property-value {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .property-input,
+  .property-textarea,
+  .property-select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    font-size: 0.875rem;
+  }
+  
+  .property-input:focus,
+  .property-textarea:focus,
+  .property-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+  
+  .property-textarea {
+    resize: vertical;
+    min-height: 60px;
+  }
+  
+  .element-type-badge {
+    background: #e5e7eb;
+    color: #374151;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+
+  .modal .action-btn{
+    padding: 5px 25px;
+  }
+  
+  .modal-header{
+    padding: 0.1rem;
+  }
+
+    
+  .modal-header h2{
+    padding: 0 1rem;
+  }
+
+  .inline-group{
+    display: inline-flex;
+    gap: 2rem;
+    margin-top: 1rem;
+  }

@@ -1,0 +1,26 @@
+.tag-chip {
+    background-color: #f3f4f6;
+    padding: 4px 8px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    font-size: 0.875rem;
+  }
+  
+  .tag-btn {
+    background: none;
+    border: none;
+    margin-left: 6px;
+    font-size: 1rem;
+    color: #6b7280;
+    cursor: pointer;
+  }
+  
+  .tag-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    min-width: 120px;
+    font-size: 0.875rem;
+  }
+  

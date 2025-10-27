@@ -1,0 +1,30 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  bpmn-designer:
+    s#build: .
+    image : bpmn-designer    
+    container_name: bpmn-designer
+    ports:
+      - "8091:80"
+      - "54322:5432"  # Optional: expose PostgreSQL port
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=localhost
+      - DB_PORT=5432
+      - DB_NAME=bpmn_designer
+      - DB_USER=postgres
+      - DB_PASSWORD=example
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/app/backups
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
