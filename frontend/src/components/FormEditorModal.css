@@ -2,9 +2,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 
 .modal, .modal * , .modal label , .modal input , .modal td {
-    font-family: 'Roboto', Arial, sans-serif;
+    /* font-family: 'Roboto', Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    -moz-osx-font-smoothing: grayscale; */
   }
 
 .modal-backdrop {
@@ -36,6 +36,14 @@
     display: flex;
     flex-direction: column;
   }
+
+  .modal.flow-condition{
+    height: 50vmin;
+  }
+
+  .modal.assignee{
+    height: 70vmin;
+  }
   
   .modal-content-props-form {
     display: flex;
@@ -43,13 +51,17 @@
     gap: 20px;
     overflow: hidden;
   }
+
+.flow-condition  .modal-content-props-form{
+    display: block;
+  }
   
   .table-wrapper {
     /* width: 40%;
     display: flex;
     flex-direction: column;    
     gap: 8px; */    
-    border: 1px solid #ccc;
+    border: 1px solid #ccc; 
     border-radius: 4px;
     overflow: hidden;
   }
@@ -82,6 +94,7 @@
     border-bottom: 1px solid #eee;
     border-right: 1px solid #eee;
     text-align: left;
+    font-size: 0.8rem;
   }
   
   .table td:last-child,
@@ -210,12 +223,16 @@
   }
   
   .modal-header{
-    padding: 0.1rem;
+    padding: 0.1rem !important;
+    background: #1e2939;
   }
 
     
   .modal-header h2{
-    padding: 0 1rem;
+    padding: 0;
+    margin: 0.8rem !important;
+    color:#ccc;
+    font-size: 1.2rem;
   }
 
   .inline-group{
@@ -223,3 +240,35 @@
     gap: 2rem;
     margin-top: 1rem;
   }
+
+  .expression-help {
+  margin-top: 15px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin: 20px;
+  margin-bottom: 0;
+}
+
+.expression-help h4 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+}
+
+.expression-help code {
+  background: #e9ecef;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.modal.assignee label span {
+  font-size: 12px ;
+  color :rgb(204, 186, 19);
+}
+
+.modal.assignee  .form-group label{
+  display: flex;
+  flex-direction: column;
+    padding-top: 8px;
+}

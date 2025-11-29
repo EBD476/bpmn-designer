@@ -17,6 +17,7 @@
   "proxy": "http://localhost:5000",
   "dependencies": {
     "bpmn-js": "^18.7.0",
+    "bpmn-js-task-resize": "^1.2.0",
     "cors": "^2.8.5",
     "diagram-js": "^15.4.0",
     "node-pty": "^1.0.0",

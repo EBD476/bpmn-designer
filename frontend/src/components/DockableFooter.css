@@ -1,0 +1,288 @@
+
+
+.dockable {
+  display: flex;
+  flex-direction: column;
+  height: 20vh;
+  overflow: hidden; /* Prevent overflow while resizing */
+}
+
+
+.problems-window {
+  background-color: #1e1e1e;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  max-height: 800px;
+  min-height: 200px;
+  transition: height 0.2s ease; /* Smooth transition for height */
+}
+
+.dockable-window{
+    z-index: 5;
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    max-height: 800px;
+    min-height: 200px;
+}
+
+
+.footer {
+  background-color: #1e1e1e;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  /* align-items: center; */
+  /* justify-content: center; */
+  position: relative; 
+  overflow: hidden;
+  transition: height 0.2s ease; /* Smooth transition for height */
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.window-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.closed {
+  height: 50px;
+}
+
+.open {
+  height: auto;  /* Allow height to expand while open */
+}
+
+.resize-handle {
+  width: 100%;
+  height: 1px;
+  cursor: ns-resize;
+  background-color: rgba(255, 255, 255, 0.5); /* Slightly visible resize handle */
+  position: absolute;
+  top: 0; /* Position it at the bottom of the footer */
+}
+
+
+.dock-resizer:hover {
+  background-color: #1584ce;
+  /* border: 2px; */
+  height: 3px;  
+}
+
+.window-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* align-items: center; */
+  width: 100%;
+  padding: 0 10px;
+}
+
+.closed .window-header h3,.closed .window-header span{
+  display: none;
+}
+
+.window-header h3 {
+  font-family: monospace;
+}
+
+.close-btn {
+  background-color: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 1.2rem;
+  position: absolute;
+  top:0;
+  right:0;
+}
+
+.close-btn:hover {
+  color: #ccc;
+}
+
+.dock-panel {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background: #1e1e1e;
+  color: #dcdcdc;
+  border-top: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  z-index: 999;
+  /* font-family: Verdana, Geneva, Tahoma, sans-serif; */
+  font-family: monospace;
+}
+
+/* .dock-panel  */
+
+.dock-resizer {
+  height: 3px;
+  cursor: ns-resize;
+  background: #333;
+}
+
+.dock-tabs {
+  display: flex;
+  background: #252526;
+  border-bottom: 1px solid #333;
+}
+
+.dock-tab {
+  padding: 6px 14px;
+  cursor: pointer;
+  border-right: 1px solid #333;
+  color: #aaa;
+}
+
+.dock-tab.active {
+  background: #1e1e1e;
+  color: white;
+  font-weight: bold;
+}
+
+.dock-content {
+  flex: 1;
+  padding: 10px;
+  overflow: auto;
+  font-family: monospace;
+  font-size: 14px;
+}
+
+
+/* Hide button */
+.dock-hide-btn {
+  margin-left: auto;
+  padding: 6px 12px;
+  cursor: pointer;
+  color: #bbb;
+  position: absolute;
+  right: 0;
+}
+
+.dock-hide-btn:hover {
+  color: #fff;
+  background: #333;
+}
+
+/* Show button when hidden */
+.dock-show-button {
+  position: fixed;
+  bottom: 22px;
+  left: 58%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 3px 14px;
+  cursor: pointer;
+  border-radius: 5px 5px 0 0;
+  font-size: 14px;
+  user-select: none;
+}
+
+.console-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  /* border-bottom: 1px solid #e5e5e5; */
+  /* background: #f8f9fa; */
+}
+
+.console-header span{
+  color: #aaa;
+}
+
+.clear-history-btn {
+  padding: 4px 8px;
+  font-size: 12px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.clear-history-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.clear-history-btn:not(:disabled):hover {
+  background: #c82333;
+}
+
+.history-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.history-entry {
+  padding: 4px 8px;
+  margin: 2px 0;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.history-time {
+  color: #6c757d;
+  margin-right: 8px;
+}
+
+.history-add {
+  background: #d4edda;
+  border-left: 3px solid #28a745;
+}
+
+.history-remove {
+  background: #f8d7da;
+  border-left: 3px solid #dc3545;
+}
+
+.history-modify {
+  background: #fff3cd;
+  border-left: 3px solid #ffc107;
+}
+
+.history-connection {
+  background: #cce7ff;
+  border-left: 3px solid #007bff;
+}
+
+.history-warning {
+  background: #fff3cd;
+  border-left: 3px solid #ffc107;
+  color: #856404;
+}
+
+.history-info {
+  background: #d1ecf1;
+  border-left: 3px solid #17a2b8;
+}
+
+.no-history {
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  padding: 20px;
+}

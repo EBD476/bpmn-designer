@@ -203,17 +203,17 @@ export default function FormEditorModal({ isOpen, onClose, onSave }) {
                 <div className='inline-group'>
                     <div className="detail-row">
                     <label>Required</label>
-                    <input id="requiredField" class="property-checkbox" type="checkbox" ></input>
+                    <input id="requiredField" className="property-checkbox" type="checkbox" ></input>
                     </div>
 
                     <div className="detail-row">
                     <label>Readable</label>
-                    <input id="requiredField" class="property-checkbox" type="checkbox" ></input>
+                    <input id="requiredField" className="property-checkbox" type="checkbox" ></input>
                     </div>
 
                     <div className="detail-row">
                     <label>Writable</label>
-                    <input id="requiredField" class="property-checkbox" type="checkbox" ></input>
+                    <input id="requiredField" className="property-checkbox" type="checkbox" ></input>
                     </div>
                 </div>
               </>

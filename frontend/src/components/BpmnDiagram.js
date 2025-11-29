@@ -1,5 +1,5 @@
 // BpmnDiagram.jsx
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState,useCallback } from 'react';
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 import { useParams, useNavigate ,Link } from 'react-router-dom';
 import 'bpmn-js/dist/assets/diagram-js.css';
@@ -9,6 +9,13 @@ import './BpmnDiagram.css';
 import FormEditorModal from './FormEditorModal';
 import flowableModdle from '../flowable-moddle.json';
 import SaveProcessModal from './SaveProcessModal';
+import FlowConditionModal from './FlowConditionModal';
+import AssigneeModal from './AssigneeModal';
+// import Resizer from './Resizer';
+import DockableFooter from './DockableFooter';
+import resizeTask from 'bpmn-js-task-resize/lib';
+import { useBpmnHistory } from "./hooks/useBpmnHistory";
+import { BpmnChangeTracker } from "./utils/bpmnChangeTracker";
 // import { Background } from 'reactflow';
 
 const BpmnDiagram = () => {
@@ -22,6 +29,8 @@ const BpmnDiagram = () => {
   const [activeTool, setActiveTool] = useState('select');
   const [selectedElement, setSelectedElement] = useState(null);
   const [showPropertiesModal, setShowPropertiesModal] = useState(false);
+  const [showFlowConditionModal, setShowFlowConditionModal] = useState(false);  
+  const [showAssigneeModal, setshowAssigneeModal] = useState(false);  
   const [showXmlModal, setShowXmlModal] = useState(false);
   const [xmlContent, setXmlContent] = useState('');
   const [draggedElement, setDraggedElement] = useState(null);
@@ -41,9 +50,52 @@ const BpmnDiagram = () => {
   const didFetchRef = useRef(false);
   const [diagramData, setDiagramData] = useState(null);
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [flowCondition,setFlowCondition] = useState(null);
+  const [isWindowOpen, setIsWindowOpen] = useState(false);
+  const [isPanelVisible, setIsPanelVisible] = useState(true);
+  const { history, addChange, clearHistory } = useBpmnHistory();
+
+  // basic mode and advanced mode with more features
+  const [mode, setMode] = useState("advanced");
+
 
   const API_BASE = '/api';
 
+
+  // Simulate BPMN diagram changes (replace with your actual BPMN implementation)
+  const simulateBpmnChanges = useCallback(() => {
+    // These would be called from your actual BPMN diagram events
+    addChange({
+      change: BpmnChangeTracker.elementAdded({ type: 'Task', name: 'Process Order', id: 'task_1' }),
+      type: 'add'
+    });
+
+    addChange({
+      change: BpmnChangeTracker.elementAdded({ type: 'StartEvent', name: 'Start', id: 'start_1' }),
+      type: 'add'
+    });
+
+    addChange({
+      change: BpmnChangeTracker.connectionCreated(
+        { type: 'StartEvent', name: 'Start' },
+        { type: 'Task', name: 'Process Order' }
+      ),
+      type: 'connection'
+    });
+
+    addChange({
+      change: BpmnChangeTracker.elementModified(
+        { type: 'Task', name: 'Process Order' },
+        { name: { oldValue: 'Process Order', newValue: 'Validate Order' } }
+      ),
+      type: 'modify'
+    });
+
+    addChange({
+      change: BpmnChangeTracker.warning('Task has no outgoing sequence flow'),
+      type: 'warning'
+    });
+  }, [addChange]);
 
   const [elementCounts, setElementCounts] = useState({
     totalElements: 0,
@@ -290,6 +342,16 @@ const BpmnDiagram = () => {
 
   // Add color configuration at the top of the component
 const colorConfig = {
+    startEvent: {
+       fill: '#bfdbfe', // Light blue
+       stroke: '#1e40af', // Dark blue
+       text: '#1e3a8a' // Darker blue text
+    },
+    endEvent: {
+      fill: '#e9d5ff', // Light purple
+      stroke: '#7c3aed', // Dark purple
+      text: '#4c1d95' // Violet text
+    },
     userTask: {
       fill: '#d1fae5', // Light green
       stroke: '#059669', // Dark green
@@ -337,9 +399,33 @@ const colorConfig = {
     }
   };
 
+  // Function to trigger resize
+  const handleResize = (elementId, dx, dy) => {
+
+  
+
+    // const modeling = bpmnModelerRef.current.get('modeling');
+    // const elementRegistry = bpmnModelerRef.current.get('elementRegistry');
+    // const element = elementRegistry.get(elementId);
+
+    // console.log(element)
+    // if (element) {
+    //   const newWidth = element.width + dx;
+    //   const newHeight = element.height + dy;
+
+    //   if (newWidth > 50 && newHeight > 50) {
+    //     modeling.resizeShape(element, {
+    //       width: newWidth,
+    //       height: newHeight,
+    //     });
+    //     // onElementResize(elementId, newWidth, newHeight);
+    //   }
+    // }
+  };
+
 
    // Filename editing functions
-   const startEditingFileName = () => {
+  const startEditingFileName = () => {
     setTempFileName(fileName.replace('.bpmn', ''));
     setIsEditingFileName(true);
   };
@@ -421,8 +507,12 @@ const colorConfig = {
 }, []);
 
 useEffect(() => {
-    loadDiagram()
+    loadDiagram()  
 }, [diagramData]);
+
+useEffect(() => {
+      setFlowCondition(selectedElement?.businessObject?.conditionExpression?.body)   
+}, [selectedElement])
 
 
   const loadDefaultDiagram = () => {
@@ -457,34 +547,96 @@ useEffect(() => {
 
 
   const loadDiagram =  async () => {
-    try {               
+
+    try {                       
+      if (diagramData && bpmnModelerRef.current) {      
+          
+          await  bpmnModelerRef.current.importXML(diagramData.xml_content)          
+          const canvas = bpmnModelerRef.current.get("canvas");
+          canvas.zoom("fit-viewport");                              
+
+          setIsLoaded(true)          
+          setProcessExecutable(bpmnModelerRef.current);
+          countElements();             
         
-    if (diagramData && bpmnModelerRef.current) {      
-
-         await  bpmnModelerRef.current.importXML(diagramData.xml_content);
-         const canvas = bpmnModelerRef.current.get("canvas");
-         canvas.zoom("fit-viewport");         
-
-         setIsLoaded(true)
-
-        // Apply colors and count elements after diagram is loaded
-        // setTimeout(() => {
-        // applyElementColors();
-        // countElements();
-        // }, 500);
-    }
+      }
     } catch (err) {
       console.error('Error loading BPMN diagram:', err);
     }
   };
 
+  // Function to set up selection event listener
+function setupSelectionEventListener(element) {
+  const eventBus =  bpmnModelerRef.current.get('eventBus');
+  // Listen for selection changes (selection event)
+  eventBus.on('element.click', function(event) {
+    const selectedElements = event.elements;
+    console.log(selectedElement)
+
+    createRectangleForElement(selectedElement?.di?.id)
+    // Create a rectangle for each selected element
+    // selectedElements.forEach(createRectangleForElement);
+  });
+}
+
+// Function to create a rectangle outside a given element
+function createRectangleForElement(element) {
+  const modeling = bpmnModelerRef.current.get('modeling');
+  const elementRegistry =bpmnModelerRef.current.get('elementRegistry');
+
+  // Find the User Task element by its ID
+  const userTaskElement = elementRegistry.get(element);
+
+  if (!userTaskElement) {
+    console.error('User Task element not found');
+    return;
+  }
+
+
+  // Access the 'di' property from the element to get the bounds
+  const elementDi = userTaskElement.di;
+
+  if (!elementDi) {
+    console.error('No diagram information (di) available for this element');
+    return;
+  }
+
+  const taskBounds = elementDi.bounds; // Access the bounds from the di object
+
+  // Ensure bounds are available
+  if (!taskBounds) {
+    console.error('Bounds information not found for the element');
+    return;
+  }
+
+  // Create a rectangle shape (with a width and height) outside of the user task
+  const newRectangle = {
+    type: 'bpmn:Shape',
+    x: taskBounds.x + taskBounds.width - 50, // Position it to the right of the user task
+    y: taskBounds.y + (taskBounds.height / 2) , // Center it vertically with some margin
+    width: 150,
+    height: 120,
+    businessObject: {
+      $type: 'bpmn:Shape'
+    }
+  };
+
+  // Add the new rectangle shape to the diagram
+  modeling.createShape(newRectangle, { x: newRectangle.x, y: newRectangle.y }, userTaskElement.parent);
+}
+
 
   const initializeModeler = () => {
     bpmnModelerRef.current = new BpmnModeler({
       container: canvasRef.current,
-      keyboard: {
-        bindTo: document
-      }
+        additionalModules: [
+          resizeTask
+        ],
+        taskResizingEnabled: true,    
+        eventResizingEnabled: true  
+      // keyboard: {
+        // bindTo: document
+      // }
     });
 
     bpmnModelerRef.current.on('commandStack.shape.create.postExecute', function (event) {
@@ -503,6 +655,11 @@ useEffect(() => {
      });
 
     bpmnModelerRef.current.on('element.click', (event) => {
+
+      console.log(event.element.id)
+      // createRectangleForElement(event.element.id)
+      // setupSelectionEventListener(event.element.id)
+
       const element = event.element;
       setSelectedElement(element);
       
@@ -556,6 +713,8 @@ const zoomIn = () => {
     if (!bpmnModelerRef.current) return;
     
     const canvas = bpmnModelerRef.current.get('canvas');
+    toggleLeftSidebar();
+    toggleRightSidebar();
     canvas.zoom('fit-viewport');
     };
 
@@ -637,7 +796,11 @@ const applyElementColors = () => {
       let colors = colorConfig.default;      
       //   console.log(element.type)
       // Determine element type and apply appropriate colors
-      if (element.type === 'bpmn:UserTask') {
+      if (element.type === 'bpmn:StartEvent') {
+        colors = colorConfig.startEvent;
+      } else if (element.type === 'bpmn:EndEvent') {
+        colors = colorConfig.endEvent;
+      } else if (element.type === 'bpmn:UserTask') {
         colors = colorConfig.userTask;
       } else if (element.type === 'bpmn:ServiceTask') {
         colors = colorConfig.systemTask;
@@ -979,13 +1142,37 @@ const applyElementColors = () => {
 
   const openPropertiesModal = () => {
     
-    if (selectedElement && selectedElement.type === 'bpmn:Task') {
+    if (selectedElement && selectedElement.type === 'bpmn:UserTask') {
       setShowPropertiesModal(true);
     }
   };
 
   const closePropertiesModal = () => {    
     setShowPropertiesModal(false);
+  };
+
+    const openConditionModal = () => {
+  
+    if (selectedElement && selectedElement.type === 'bpmn:SequenceFlow') {      
+      setFlowCondition(selectedElement?.businessObject?.conditionExpression?.body)
+      setShowFlowConditionModal(true);
+    }
+  }
+
+    const openAssignmentModal = () => {
+  
+    if (selectedElement && selectedElement.type === 'bpmn:UserTask') {      
+      // setFlowCondition(selectedElement?.businessObject?.conditionExpression?.body)
+      setshowAssigneeModal(true);
+    }
+  }
+
+   const closeAssignmentModal = () => {    
+    setshowAssigneeModal(false);
+  };
+
+   const closeFlowConditionModal = () => {    
+    setShowFlowConditionModal(false);
   };
 
   const closeXmlModal = () => {
@@ -1097,6 +1284,9 @@ const saveDesignToDB = async (designData) => {
     if (data) {
         setFileName(data.name)
     }
+
+      //for test
+    simulateBpmnChanges()   
 
     return data;
   }
@@ -1213,6 +1403,51 @@ const handleSave = async () => {
     };
   };
 
+  const setProcessExecutable = async (modelerInstance) => {
+
+    try {
+      const { xml } = await bpmnModelerRef.current.saveXML({ format: true });      
+      // Update the XML
+      const updatedXml = xml.replace(
+        /<bpmn2:process id="Process_1" isExecutable="false">/g,
+        '<bpmn2:process id="Process_1" isExecutable="true">'
+      );
+      
+      // Reload the diagram with updated XML
+      await bpmnModelerRef.current.importXML(updatedXml);            
+    } catch (error) {
+      console.error('Error updating process:', error);
+    }
+    
+   };
+
+  const addConditionExpressionToFlow = async (expression) => {    
+    
+    const modeler = bpmnModelerRef.current;
+    const elementRegistry = modeler.get('elementRegistry');
+    const modeling = modeler.get('modeling');
+    const moddle = bpmnModelerRef.current.get('moddle');
+
+    // Get the sequence flow element by ID
+    const sequenceFlow = elementRegistry.get(selectedElementInfo.id);
+    if (sequenceFlow) {
+      // Create the condition expression
+      const formalExpression = moddle.create('bpmn:FormalExpression', {
+          body: expression
+      });
+
+      modeling.updateProperties(sequenceFlow, {
+          conditionExpression: formalExpression  
+      });        
+      // modeling.updateProperties(sequenceFlow, { id: "value" });
+      // console.log('Condition expression added:', conditionExpression);
+      const { xml } = await modeler.saveXML({ format: true });
+    } else {
+            console.error('SequenceFlow not found!');
+
+    }
+  };
+
 
   const handleSaveFormProperties = async (properties) => {
     const modeler = bpmnModelerRef.current;
@@ -1221,7 +1456,6 @@ const handleSave = async () => {
     const moddle = modeler.get('moddle');
 
     const userTask = elementRegistry.get('Task_1');
-
 
     const formProps = properties.map((prop) =>
       moddle.create('flowable:FormProperty', {
@@ -1265,13 +1499,18 @@ const handleSave = async () => {
   };
 
   const getSelectedElementInfo = () => {
-    if (!selectedElement) return null;
+    if (!selectedElement) return null;           
+    
     
     return {
       id: selectedElement.id,
       type: selectedElement.type,
       name: selectedElement.businessObject?.name || 'Unnamed',
-      canHaveForm: selectedElement.type === 'bpmn:Task'
+      flowCondition : selectedElement.businessObject.conditionExpression?.body,
+      assignments : '',
+      canHaveForm: selectedElement.type === 'bpmn:UserTask',
+      canHaveFlowCondition: selectedElement.type === 'bpmn:SequenceFlow',
+      canHaveAssignments: selectedElement.type === 'bpmn:UserTask'
     };
   };
 
@@ -1289,7 +1528,12 @@ const handleSave = async () => {
           <span className="category-label">{categoryData.label}</span>
         </div>
         <div className="category-toggle">
-          {categoryData.expanded ? '▼' : '►'}
+          {/* {categoryData.expanded ? '▼' : '►'} */}
+          {categoryData.expanded ? ( 
+             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="gl-animated-icon gl-animated-icon-off gl-animated-icon-current" transform="matrix(6.123233995736766e-17,1,-1,6.123233995736766e-17,0,0)" ><path d="M6.75 4.75L10 8L6.75 11.25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="gl-animated-chevron-right-down-arrow"></path></svg>
+          ):(
+             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" className="gl-animated-icon gl-animated-icon-on gl-animated-icon-current"><path d="M6.75 4.75L10 8L6.75 11.25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="gl-animated-chevron-right-arrow"></path></svg>
+          )}
         </div>
       </div>
       
@@ -1459,7 +1703,9 @@ const handleSave = async () => {
       const thumbnailSvg = await createThumbnailSvg(svg);
       
       // Convert to base64 data URL
-      const base64Thumbnail = `data:image/svg+xml;base64,${btoa(thumbnailSvg)}`;
+      const utf8String = unescape(encodeURIComponent(thumbnailSvg));
+      const base64Thumbnail = `data:image/svg+xml;base64,${btoa(utf8String)}`;
+      
       return base64Thumbnail;
     } catch (error) {
       console.error('Error generating thumbnail from SVG:', error);
@@ -1473,7 +1719,7 @@ const handleSave = async () => {
       // Parse the original SVG
       const parser = new DOMParser();
       const svgDoc = parser.parseFromString(originalSvg, 'image/svg+xml');
-      const svgElement = svgDoc.documentElement;
+      const svgElement = svgDoc.documentElement;      
       
       // Get the original viewBox
       const originalViewBox = svgElement.getAttribute('viewBox');
@@ -1497,10 +1743,10 @@ const handleSave = async () => {
       }
       
       // Calculate offsets to center the thumbnail
-      const offsetX = 20 ;
+      const offsetX = 70 ;
     //   (thumbnailWidth - scaledWidth) / 8;
       const offsetY = 20;
-    //   (thumbnailHeight - scaledHeight) / 8;
+    //   (thumbnailHeight - scaledHeight) / 8;    
       
       // Create a new SVG for the thumbnail
       const thumbnailSvg = `
@@ -1580,6 +1826,12 @@ const handleSave = async () => {
     return `data:image/svg+xml;base64,${btoa(fallbackSvg)}`;
   };
 
+  const handleVisibilityChange = (visible) => {
+    console.log("Panel visibility changed to:", visible);
+    setIsPanelVisible(!visible);
+  };
+
+
   return (
     <div className="bpmn-diagram-modern">
       {/* Compact Header */}
@@ -1588,8 +1840,8 @@ const handleSave = async () => {
           <div className="app-icon"></div>
           {/* 📊 */}
           <div className="title-section">
-            <h2>BPMN Editor</h2>
-            <div className="file-status">
+            <h3>BPMN Editor</h3>
+            {/* <div className="file-status">
             {isEditingFileName ? (
             <div className="filename-editor">
                   <input
@@ -1614,7 +1866,7 @@ const handleSave = async () => {
               {isDirty && <span className="unsaved-dot"></span>}
             </div>
         )}
-          </div>
+          </div> */}
         </div>
         </div>
         
@@ -1795,6 +2047,15 @@ const handleSave = async () => {
               opacity: isLoaded ? 1 : 0.7,
             }}
           />
+
+            {/* <Resizer
+                element={{
+                id: 'Activity_0ol9pgw',
+                width: '100',
+                height: '80',
+              }}
+              onResize={handleResize}
+            /> */}
           
           {!isLoaded && (
             <div className="loading-state">
@@ -1870,6 +2131,18 @@ const handleSave = async () => {
 
         {/* <FormEditor onSave={handleSaveFormProperties} /> */}
 
+        <AssigneeModal
+          isOpen={showAssigneeModal}
+            onClose={closeAssignmentModal}
+        />
+
+        <FlowConditionModal
+            isOpen={showFlowConditionModal}
+            onClose={closeFlowConditionModal}
+            onSave={addConditionExpressionToFlow}
+            // expression={flowCondition}
+            initValue={flowCondition}
+        />
         <FormEditorModal
             isOpen={showPropertiesModal}
             onClose={closePropertiesModal}
@@ -1906,7 +2179,7 @@ const handleSave = async () => {
             
             {selectedElementInfo ? (
               <div className="selected-element-info">
-                <div className="element-type">{selectedElementInfo.type.replace('bpmn:', '')}</div>
+                {/* <div className="element-type">{selectedElementInfo.type.replace('bpmn:', '')}</div> */}
                 <div className="element-name">{selectedElementInfo.name}</div>
                 {/* {selectedElementInfo.canHaveForm && (
                   <button 
@@ -1926,7 +2199,7 @@ const handleSave = async () => {
             {selectedElementInfo && (
                 <>
               <div className="property-group">
-                <label className="property-label">Element ID</label>
+                <label className="property-label">Element ID :</label>
                 <a > {selectedElementInfo.id} </a> 
                 {/* <input 
                   type="text" 
@@ -1937,7 +2210,7 @@ const handleSave = async () => {
               </div>
 
             <div className="property-group">
-            <label className="property-label">Name</label>
+            <label className="property-label">Name :</label>
             {/* <input 
                 type="text" 
                 className="property-input" 
@@ -1947,7 +2220,7 @@ const handleSave = async () => {
              <a > {selectedElementInfo.name} </a> 
             </div>
             <div className="property-group">
-            <label className="property-label">Type</label>
+            <label className="property-label">Type :</label>
             {/* <input 
                 type="text" 
                 className="property-input" 
@@ -1957,28 +2230,55 @@ const handleSave = async () => {
                 <a > {selectedElementInfo.type.replace('bpmn:', '')} </a> 
             </div>
             <div className="property-group">
-            <label className="property-label">Documentation</label>
+            <label className="property-label">Documentation :</label>
                 <a >No value </a>
             </div>
             {selectedElementInfo.canHaveForm && (
             <div className="property-group">
-            <label className="property-label">Form properties </label> 
+            <label className="property-label">Form properties:</label> 
             {/* <button 
                     className="properties-btn"
                     onClick={openPropertiesModal}
                   >
                     Form Properties
                   </button> */}
-                <a className='link' onClick={openPropertiesModal} > 3 form properties </a>                
+                <a className='link' onClick={openPropertiesModal} > No form properties </a>                
             </div>
             )}
+              {selectedElementInfo.canHaveAssignments && (
             <div className="property-group">
-            <label className="property-label">Assignments </label>  
-            <a >a candidate group </a>
+            <label className="property-label">Assignments :</label>  
+            <a className='link' onClick={openAssignmentModal} > 
+               {selectedElementInfo?.assignments ? selectedElementInfo?.assignments :  "No assignment"}
+              </a>
+            </div>   
+            )}
+          {selectedElementInfo?.canHaveFlowCondition && (
+          <div className="property-group">
+            <label className="property-label">Flow condition : </label>  
+            <a className='link' onClick={openConditionModal} > 
+              {selectedElementInfo?.flowCondition ? selectedElementInfo?.flowCondition :  "No condition set"}
+              {/* {flowCondition ? flowCondition : "No condition set "}                 */}
+              </a> 
+            </div>   
+            )}
+            <div className="property-group">
+            <label className="property-label">Category : </label>  
+            <a >No value </a>
             </div>
 
             <div className="property-group">
-            <label className="property-label">Priority </label>  
+            <label className="property-label">Due date : </label>   
+                <a >No value </a>
+            </div>
+
+            <div className="property-group">
+            <label className="property-label">Multi-instance type: </label>   
+            <a >No value </a>
+            </div>
+
+            <div className="property-group">
+            <label className="property-label">Priority : </label>  
                <select >
                <option>Low</option>
                <option>Medium</option>
@@ -1987,26 +2287,14 @@ const handleSave = async () => {
             </div>
 
             <div className="property-group">
-            <label className="property-label">Exclusive </label>  
+            <label className="property-label checkbox-label">Exclusive
             <input 
                 type="checkbox" 
                 className="property-input"                
                 />
-            </div>
-
-            <div className="property-group">
-            <label className="property-label">Category </label>  
-            <a >No value </a>
-            </div>
-
-            <div className="property-group">
-            <label className="property-label">Due date </label>   
-                <a >No value </a>
-            </div>
-
-            <div className="property-group">
-            <label className="property-label">Multi-instance type </label>   
-            <a >No value </a>
+                <i></i>
+                {/* <span>exclusive</span> */}
+              </label>  
             </div>
 
             </>
@@ -2224,7 +2512,7 @@ const handleSave = async () => {
             
             <div className="modal-body xml-preview">                
               <div className="xml-toolbar">
-                <div class="toolbar-btn">
+                <div className="toolbar-btn">
                 <button className="xml-toolbar-btn" onClick={copyXmlToClipboard} title="Copy to Clipboard">
                   📋 Copy
                 </button>
@@ -2251,11 +2539,26 @@ const handleSave = async () => {
           </div>
         </div>
       )}
+     
+      {mode === "advanced" && (
+          <DockableFooter 
+              isVisible={isPanelVisible}
+              onVisibilityChange={handleVisibilityChange}
+              bpmnHistory={history}
+              onClearHistory={clearHistory}
+          />
+      )}
+
+      {/* <DockableFooter toggleWindow={isWindowOpen} /> */}
 
       {/* Bottom Status Bar */}
       <div className="bpmn-status-bar">
+        
         <div className="status-left">
-          <span className="status-item">Ready</span>
+          <span className="status-item state">Ready</span>
+
+          <button className="status-item"  onClick={() => setIsPanelVisible(!isPanelVisible)}>Terminal</button>
+
           <span className="status-item">Zoom: {Math.round(zoomLevel * 100)}%</span>
               {selectedElementInfo && (
             <span className="status-item">

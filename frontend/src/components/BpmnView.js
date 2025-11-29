@@ -5,6 +5,8 @@ import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
 import EditPropertiesModal from './EditPropertiesModal'
 import DuplicateModal from "./DuplicateModal";
 import BpmnViewer from 'bpmn-js/lib/Viewer';
+import ZoomScrollModule from 'diagram-js/lib/navigation/zoomscroll/ZoomScroll.js';
+import MoveCanvasModule from 'diagram-js/lib/navigation/movecanvas/MoveCanvas.js';
 
 
 function BpmnModelerComponent() {
@@ -114,16 +116,13 @@ function BpmnModelerComponent() {
       keyboard: {
         bindTo: document
       },
-      additionalModules: [
-        {
-          palette: ["value", {}],
-          paletteProvider: ["value", {}],
-        //   contextPad: ["value", {}],
-          contextPadProvider: ["value", {}],
-          // optionally disable label editing module:
-          labelEditingProvider: ["value", null]
-        }
-      ]
+      navigation: {
+        enabled: true
+      },
+     additionalModules: [
+      ZoomScrollModule,
+      MoveCanvasModule
+    ] 
     });
 
     return () => {

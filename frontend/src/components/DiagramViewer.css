@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap");
+/* @import url("https://fonts.googleapis.com/css2?family=Roboto&display=swap"); */
 
 .diagram-viewer-container {
     height: 100vh;
@@ -701,3 +701,6 @@
    background: #94a3b8;
  }
 
+#bpmncontainer{
+  padding: 2rem 5rem;
+}

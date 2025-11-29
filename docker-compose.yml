@@ -3,7 +3,7 @@ version: '3.8'
 
 services:
   bpmn-designer:
-    s#build: .
+    #build: .
     image : bpmn-designer    
     container_name: bpmn-designer
     ports:
